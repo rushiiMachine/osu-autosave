@@ -17,7 +17,7 @@ FetchContent_MakeAvailable(ctfp)
 # Project
 
 project(osu_autosave CXX)
-add_executable(osu_autosave main.cpp)
+add_executable(osu_autosave main.cpp process.cpp)
 target_link_libraries(osu_autosave PRIVATE ctfp::ctfp)
 
 set(CMAKE_CXX_STANDARD 23)
