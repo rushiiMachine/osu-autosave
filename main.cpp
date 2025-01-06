@@ -1,36 +1,15 @@
+#include <bitset>
+#include <cassert>
 #include <chrono>
-#include <thread>
-#include <span>
-#include <vector>
 #include <iostream>
-#include <ctfp/ctfp.h>
-#include "process.h"
-
-template<ctfp::string Pattern>
-void* scanMemory(void* handle, const std::vector<MemoryRegion>& regions) {
-    constexpr static auto pattern = ctfp::build<Pattern>();
-    auto buffer = std::vector<std::byte>();
-
-    for (const auto& region: regions) {
-        buffer.clear();
-        buffer.reserve(region.size);
-        if (!readProcessRegion(handle, region, reinterpret_cast<void*>(buffer.data())))
-            continue;
-
-        auto memory = std::span{buffer};
-        auto result = std::search(memory.begin(), memory.end(), pattern.begin(), pattern.end());
-
-        if (result == memory.end())
-            continue;
-
-        return reinterpret_cast<void*>(std::addressof(*result));
-    }
-
-    return nullptr;
-}
+#include <thread>
+#include "memory.hpp"
+#include "process.hpp"
+#include "scan.hpp"
 
 int main() {
     uint32_t osuPid = findOsuPid();
+    if (!osuPid) return 1;
     void* osuHandle = openProcess(osuPid);
     std::cout << "osu! pid: " << osuPid << std::endl;
 
@@ -43,12 +22,18 @@ int main() {
                       << std::endl;
         }
 
-        void* menuMods = scanMemory<"C8FF?????810D?????080000">(osuHandle, regions);
-        std::cout << "Found menuMods at 0x"
-                  << std::uppercase << std::hex << menuMods
-                  << std::endl;
-        if (menuMods) {
-            std::cout << "Menu mods: " << (**((uint64_t**) menuMods)) << std::endl;
+        ScanResult menuModsPtrScan = scanMemory<"C8FF?????810D?????080000">(osuHandle, regions);
+        if (menuModsPtrScan.foundRealPtr) {
+            auto* menuModsPtr = *reinterpret_cast<uint32_t**>(
+                    menuModsPtrScan.data.data() + menuModsPtrScan.foundIdx + 0x9);
+
+            uint32_t menuMods;
+            assert(readProcessU32(osuHandle, menuModsPtr, &menuMods) && "Failed to read mods value");
+
+            std::cout << "Found menuModsPtr at 0x"
+                      << std::uppercase << std::hex << menuModsPtrScan.foundRealPtr
+                      << ", mods: " << std::bitset<32>{menuMods}
+                      << std::endl;
         }
     }
 

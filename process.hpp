@@ -18,4 +18,4 @@ bool isProcessRunning(void* handle);
 
 std::vector<MemoryRegion> getProcessRegions(void* handle);
 
-bool readProcessRegion(void* handle, const MemoryRegion& region, void* buffer);
+bool readProcessMemory(void* procHandle, void* baseAddress, size_t length, void* output);
