@@ -17,9 +17,17 @@ FetchContent_MakeAvailable(ctfp)
 # Project
 
 project(osu_autosave CXX)
-add_executable(osu_autosave main.cpp process.cpp)
+add_executable(osu_autosave
+        main.cpp
+        process.cpp
+)
 target_link_libraries(osu_autosave PRIVATE ctfp::ctfp)
-
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Werror")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+target_compile_features(osu_autosave PUBLIC cxx_std_23)
+target_link_options(osu_autosave PUBLIC
+        -m32
+)
+target_compile_options(osu_autosave PUBLIC
+        -m32
+        $<$<CONFIG:Debug>: -Wall -Werror>
+        $<$<CONFIG:Release>: -O3>
+)
