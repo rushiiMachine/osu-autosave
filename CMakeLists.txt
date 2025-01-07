@@ -19,8 +19,9 @@ FetchContent_MakeAvailable(ctfp)
 project(osu_autosave CXX)
 add_executable(osu_autosave
         main.cpp
-        process.cpp
         memory.cpp
+        osu.cpp
+        process.cpp
 )
 target_link_libraries(osu_autosave PRIVATE ctfp::ctfp)
 target_compile_features(osu_autosave PUBLIC cxx_std_23)

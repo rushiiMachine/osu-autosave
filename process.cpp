@@ -62,15 +62,7 @@ std::vector<MemoryRegion> getProcessRegions(void* procHandle) {
 }
 
 bool readProcessMemory(void* procHandle, void* baseAddress, size_t length, void* output) {
-    SIZE_T read = 0;
-    if (!ReadProcessMemory(procHandle, baseAddress, output, length, &read)) {
-        std::cout << "Failed to read memory at "
-                  << "0x" << std::uppercase << std::hex << baseAddress
-                  << " due to error: 0x" << GetLastError()
-                  << ", read 0x" << read << " bytes!"
-                  << std::endl;
-    }
-    return read == length;
+    return ReadProcessMemory(procHandle, baseAddress, output, length, nullptr) != 0;
 }
 
 #endif

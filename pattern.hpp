@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstddef>
 #include <ctfp/ctfp.h>
 #include "memory.hpp"
