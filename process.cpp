@@ -31,24 +31,24 @@ void* openProcess(uint32_t pid) {
     return OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pid);
 }
 
-void closeProcess(void* handle) {
-    CloseHandle(handle);
+void closeProcess(void* procHandle) {
+    CloseHandle(procHandle);
 }
 
-bool isProcessRunning(void* handle) {
+bool isProcessRunning(void* procHandle) {
     DWORD returnCode{};
-    if (!GetExitCodeProcess(handle, &returnCode))
+    if (!GetExitCodeProcess(procHandle, &returnCode))
         return false;
 
     return returnCode == STILL_ACTIVE;
 }
 
-std::vector<MemoryRegion> getProcessRegions(void* handle) {
+std::vector<MemoryRegion> getProcessRegions(void* procHandle) {
     std::vector<MemoryRegion> regions;
     MEMORY_BASIC_INFORMATION info;
 
     for (uint8_t* address = nullptr;
-         VirtualQueryEx(handle, address, &info, sizeof(info)) != 0;
+         VirtualQueryEx(procHandle, address, &info, sizeof(info)) != 0;
          address += info.RegionSize) {
 
         if ((info.State & MEM_COMMIT) == 0 || (info.Protect & (PAGE_READWRITE | PAGE_EXECUTE_READWRITE)) == 0) {

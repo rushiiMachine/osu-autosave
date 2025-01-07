@@ -6,10 +6,19 @@
 #include "memory.hpp"
 
 struct ScanResult {
+    /* The process memory region this scan result was found in. */
     MemoryRegion memoryRegion;
+    /* A copy of the full memory region. */
     std::vector<std::byte> data;
+    /* Index into the memory region (data vector) where the search pattern starts. */
     size_t foundIdx;
+    /* Pointer into data where the search pattern starts */
+    void* foundPtr;
+    /* Pointer into the target process's memory region where the search pattern starts. */
     void* foundRealPtr;
+
+    [[nodiscard]]
+    inline bool isOk() const { return foundRealPtr; }
 };
 
 template<ctfp::string Pattern>
@@ -32,6 +41,7 @@ ScanResult scanMemory(void* procHandle, const std::vector<MemoryRegion>& regions
                 region,
                 std::move(buffer),
                 static_cast<size_t>(index),
+                std::addressof(*result),
                 static_cast<void*>(static_cast<uint8_t*>(region.baseAddress) + index)
         };
     }
